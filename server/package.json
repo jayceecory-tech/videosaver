@@ -1,0 +1,17 @@
+{
+  "name": "videosaver-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VideoSaver 解析服务：短链 -> 视频地址，并代理下载给小程序（身份失效时自动铸造补充）",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "start:cloud": "node cloud/server.js"
+  },
+  "dependencies": {
+    "puppeteer-core": "^21.11.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

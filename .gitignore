@@ -1,0 +1,13 @@
+node_modules/
+logs/
+*.log
+*.zip
+.DS_Store
+.env
+
+# 身份文件：含真实 uifid，绝不入库
+identity.json
+identity-pool.json
+
+# 微信开发者工具个人配置
+project.private.config.json

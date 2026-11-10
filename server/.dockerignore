@@ -1,0 +1,10 @@
+node_modules
+tools
+logs
+.git
+.gitignore
+*.log
+identity.json
+identity-pool.json
+.dockerignore
+Dockerfile

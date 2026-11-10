@@ -1,0 +1,16 @@
+/**app.wxss**/
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: #1a1a1a;
+  background: #f5f6f8;
+}
+
+view,
+text,
+image,
+textarea,
+input {
+  box-sizing: border-box;
+}
+
+@import 'app-wxa-auto-dark.wxss'

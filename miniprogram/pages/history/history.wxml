@@ -1,0 +1,43 @@
+<!--history.wxml-->
+<navigation-bar title="历史记录" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="page">
+    <view class="list-head" wx:if="{{list.length}}">
+      <text class="list-count">共 {{list.length}} 条</text>
+      <text class="clear-btn" bindtap="onClearAll">清空</text>
+    </view>
+
+    <view class="item" wx:for="{{list}}" wx:key="id">
+      <image class="cover" wx:if="{{item.cover}}" src="{{item.cover}}" mode="aspectFill"></image>
+      <view class="cover cover-empty" wx:else>视频</view>
+
+      <view class="item-main">
+        <view class="item-title">{{item.title || '视频'}}</view>
+        <view class="item-meta">
+          <text wx:if="{{item.author}}">{{item.author}} · </text>
+          <text>{{item.timeText}} · {{item.sizeText}}</text>
+        </view>
+
+        <view class="progress-bar" wx:if="{{savingId === item.id}}">
+          <view class="progress-inner" style="width: {{item.progress}}%;"></view>
+        </view>
+      </view>
+
+      <view class="item-actions">
+        <view
+          class="action {{savingId === item.id ? 'is-loading' : ''}}"
+          data-id="{{item.id}}"
+          data-index="{{index}}"
+          bindtap="onSave"
+        >{{savingId === item.id ? item.progress + '%' : '保存'}}</view>
+        <view class="action action-gray" data-url="{{item.videoUrl}}" bindtap="onCopy">复制链接</view>
+        <view class="action action-red" data-id="{{item.id}}" bindtap="onRemove">删除</view>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{!list.length}}">
+      <view class="empty-text">还没有保存记录</view>
+      <view class="empty-sub">去「解析保存」页粘贴视频链接试试</view>
+    </view>
+  </view>
+</scroll-view>

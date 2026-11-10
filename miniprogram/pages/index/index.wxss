@@ -1,0 +1,202 @@
+/**index.wxss**/
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f6f8;
+}
+
+.scrollarea {
+  flex: 1;
+  overflow-y: hidden;
+}
+
+.page {
+  padding: 24rpx 24rpx 80rpx;
+  box-sizing: border-box;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+}
+
+.input {
+  width: 100%;
+  height: 220rpx;
+  font-size: 28rpx;
+  line-height: 44rpx;
+  color: #1a1a1a;
+  box-sizing: border-box;
+}
+
+.input-ph {
+  color: #b0b4bb;
+  font-size: 26rpx;
+}
+
+.input-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-top: 12rpx;
+  border-top: 1rpx solid #f0f1f3;
+  padding-top: 16rpx;
+}
+
+.text-btn {
+  margin-left: 32rpx;
+  font-size: 26rpx;
+  color: #07c160;
+}
+
+.primary-btn {
+  margin-top: 32rpx;
+  height: 96rpx;
+  line-height: 96rpx;
+  text-align: center;
+  border-radius: 48rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 500;
+}
+
+.primary-btn.is-disabled {
+  background: #a8e5c3;
+}
+
+.result-card {
+  margin-top: 32rpx;
+  display: flex;
+  flex-direction: row;
+}
+
+.cover {
+  width: 180rpx;
+  height: 240rpx;
+  border-radius: 12rpx;
+  background: #f0f1f3;
+  flex-shrink: 0;
+}
+
+.result-main {
+  flex: 1;
+  margin-left: 24rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-title {
+  font-size: 30rpx;
+  color: #1a1a1a;
+  font-weight: 500;
+  line-height: 42rpx;
+}
+
+.result-meta {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #8a8f99;
+}
+
+.progress-wrap {
+  margin-top: auto;
+  padding-top: 20rpx;
+}
+
+.progress-bar {
+  height: 10rpx;
+  border-radius: 5rpx;
+  background: #eef0f3;
+  overflow: hidden;
+}
+
+.progress-inner {
+  height: 100%;
+  background: #07c160;
+  border-radius: 5rpx;
+  transition: width 0.2s;
+}
+
+.progress-text {
+  margin-top: 12rpx;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-size: 24rpx;
+  color: #8a8f99;
+}
+
+.cancel {
+  color: #fa5151;
+}
+
+.row-actions {
+  margin-top: 24rpx;
+  display: flex;
+  flex-direction: row;
+}
+
+.ghost-btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 40rpx;
+  background: #fff;
+  color: #07c160;
+  font-size: 28rpx;
+  margin-right: 20rpx;
+}
+
+.ghost-btn:last-child {
+  margin-right: 0;
+}
+
+/* button 型分享按钮：去除默认边框与内边距，与 ghost-btn 视觉一致 */
+.share-btn {
+  padding: 0;
+  margin: 0;
+  border: none;
+  width: auto;
+  background: #fff;
+}
+
+.share-btn::after {
+  border: none;
+}
+
+.error {
+  margin-top: 24rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+  background: #fff1f0;
+  color: #fa5151;
+  font-size: 26rpx;
+  line-height: 40rpx;
+}
+
+.tips {
+  margin-top: 48rpx;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  background: rgba(7, 193, 96, 0.06);
+}
+
+.tips-title {
+  font-size: 26rpx;
+  color: #07c160;
+  font-weight: 500;
+  margin-bottom: 12rpx;
+}
+
+.tips-item {
+  font-size: 24rpx;
+  color: #6b7078;
+  line-height: 40rpx;
+}
+
+@import 'index-wxa-auto-dark.wxss'

@@ -1,0 +1,93 @@
+/* 
+此文件为开发者工具生成，生成时间: 2026/10/29 21:34:35
+使用方法：
+在 index.wxss 文件末尾引入样式
+```
+@import "./index-wxa-auto-dark.wxss";
+```
+ */
+
+@media (prefers-color-scheme: dark) {
+    page {
+        background: rgb(23, 24, 25);
+    }
+
+    .card {
+        background: rgb(17, 17, 17);
+    }
+
+    .input {
+        color: rgb(243, 243, 243);
+    }
+
+    .input-ph {
+        color: rgb(72, 75, 81);
+    }
+
+    .input-actions {
+        border-top: rgb(0, 0, 0);
+    }
+
+    .text-btn {
+        color: rgb(0, 105, 12);
+    }
+
+    .primary-btn {
+        background: rgb(0, 105, 12);
+        color: rgb(17, 17, 17);
+    }
+
+    .primary-btn.is-disabled {
+        background: rgb(0, 55, 30);
+    }
+
+    .cover {
+        background: rgb(27, 27, 29);
+    }
+
+    .result-title {
+        color: rgb(243, 243, 243);
+    }
+
+    .result-meta {
+        color: rgb(104, 109, 118);
+    }
+
+    .progress-bar {
+        background: rgb(27, 28, 30);
+    }
+
+    .progress-inner {
+        background: rgb(0, 105, 12);
+    }
+
+    .progress-text {
+        color: rgb(104, 109, 118);
+    }
+
+    .cancel {
+        color: rgb(205, 33, 49);
+    }
+
+    .ghost-btn {
+        background: rgb(17, 17, 17);
+        color: rgb(0, 105, 12);
+    }
+
+    .error {
+        background: rgb(32, 23, 22);
+        color: rgb(205, 33, 49);
+    }
+
+    .tips {
+        background: rgba(0, 105, 12, 0.06);
+    }
+
+    .tips-title {
+        color: rgb(0, 105, 12);
+    }
+
+    .tips-item {
+        color: rgb(135, 140, 148);
+    }
+}

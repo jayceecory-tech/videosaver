@@ -1,0 +1,150 @@
+/**history.wxss**/
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f6f8;
+}
+
+.scrollarea {
+  flex: 1;
+  overflow-y: hidden;
+}
+
+.page {
+  padding: 24rpx 24rpx 80rpx;
+  box-sizing: border-box;
+}
+
+.list-head {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8rpx 16rpx;
+}
+
+.list-count {
+  font-size: 26rpx;
+  color: #8a8f99;
+}
+
+.clear-btn {
+  font-size: 26rpx;
+  color: #fa5151;
+}
+
+.item {
+  display: flex;
+  flex-direction: row;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+}
+
+.cover {
+  width: 140rpx;
+  height: 186rpx;
+  border-radius: 12rpx;
+  background: #f0f1f3;
+  flex-shrink: 0;
+}
+
+.cover-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #b0b4bb;
+}
+
+.item-main {
+  flex: 1;
+  margin: 0 20rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-title {
+  font-size: 28rpx;
+  color: #1a1a1a;
+  line-height: 40rpx;
+}
+
+.item-meta {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #8a8f99;
+}
+
+.progress-bar {
+  margin-top: auto;
+  height: 10rpx;
+  border-radius: 5rpx;
+  background: #eef0f3;
+  overflow: hidden;
+}
+
+.progress-inner {
+  height: 100%;
+  background: #07c160;
+  border-radius: 5rpx;
+}
+
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.action {
+  min-width: 110rpx;
+  padding: 0 16rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #07c160;
+  background: rgba(7, 193, 96, 0.1);
+  border-radius: 28rpx;
+  margin-bottom: 12rpx;
+}
+
+.action:last-child {
+  margin-bottom: 0;
+}
+
+.action.is-loading {
+  color: #8a8f99;
+  background: #f0f1f3;
+}
+
+.action-gray {
+  color: #6b7078;
+  background: #f0f1f3;
+}
+
+.action-red {
+  color: #fa5151;
+  background: #fff1f0;
+}
+
+.empty {
+  padding: 200rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-text {
+  font-size: 30rpx;
+  color: #6b7078;
+}
+
+.empty-sub {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #b0b4bb;
+}
