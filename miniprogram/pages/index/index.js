@@ -144,22 +144,27 @@ Page({
       .catch(err => this.onFail(err))
   },
 
-  /** 保存视频：已授权直接保存；否则弹窗确认 → 观看广告 → 看完自动保存 */
-  onSave() {
-    if (this.data.busy || !this.filePath) return
+  /** 广告门槛：已授权直接执行；否则弹窗确认 → 观看广告 → 看完自动执行 */
+  withAdGate(action) {
     if (isGranted()) {
-      this.saveNow()
+      action()
       return
     }
     wx.showModal({
-      title: '解锁保存到相册',
-      content: '观看一小段视频广告，即可保存本次视频，之后 24 小时内无需重复观看。',
+      title: '解锁功能',
+      content: '观看一小段视频广告，即可解锁保存与复制链接，之后 24 小时内无需重复观看。',
       confirmText: '观看广告',
-      cancelText: '暂不保存',
+      cancelText: '暂不使用',
       success: res => {
-        if (res.confirm) this.saveNow()
+        if (res.confirm) action()
       },
     })
+  },
+
+  /** 保存视频 */
+  onSave() {
+    if (this.data.busy || !this.filePath && !this.data.result) return
+    this.withAdGate(() => this.saveNow())
   },
 
   /** 确认/授权通过后：真正下载视频 → 写入相册（看完广告自动执行） */
@@ -214,10 +219,20 @@ Page({
       .catch(err => this.onFail(err))
   },
 
+  /** 复制视频直链（同样需要广告授权） */
   onCopyLink() {
     const url = this.data.result && this.data.result.url
     if (!url) return
-    wx.setClipboardData({ data: url })
+    this.withAdGate(() => {
+      ensureAdGrant().then(res => {
+        if (!res.ok) {
+          wx.showToast({ title: res.reason || '需完整观看广告后才能复制', icon: 'none' })
+          return
+        }
+        this.setData({ adFree: isGranted() })
+        wx.setClipboardData({ data: url })
+      })
+    })
   },
 
   onCancel() {
