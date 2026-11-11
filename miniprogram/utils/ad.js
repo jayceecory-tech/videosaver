@@ -119,10 +119,32 @@ function preload() {
   getAd()
 }
 
+/**
+ * 广告门槛（页面共享）：
+ * 已授权 → 直接执行 action；否则弹窗确认，用户同意后观看广告，看完自动执行。
+ * @param {() => void} action 授权通过后执行的动作
+ */
+function withAdGate(action) {
+  if (isGranted()) {
+    action()
+    return
+  }
+  wx.showModal({
+    title: '解锁功能',
+    content: '观看一小段视频广告，即可解锁保存与复制链接，之后 24 小时内无需重复观看。',
+    confirmText: '观看广告',
+    cancelText: '暂不使用',
+    success: res => {
+      if (res.confirm) action()
+    },
+  })
+}
+
 module.exports = {
   isGranted,
   remainMs,
   ensureAdGrant,
+  withAdGate,
   preload,
   STORAGE_KEY,
 }

@@ -2,7 +2,7 @@ const { parseShareText } = require('../../utils/api')
 const { extractFirstUrl } = require('../../utils/parser')
 const { downloadVideo, getFileSize, saveToAlbum } = require('../../utils/media')
 const { ad } = require('../../config')
-const { isGranted, ensureAdGrant, preload } = require('../../utils/ad')
+const { isGranted, ensureAdGrant, withAdGate, preload } = require('../../utils/ad')
 const { addHistory } = require('../../utils/storage')
 const { formatSize } = require('../../utils/format')
 
@@ -29,7 +29,6 @@ Page({
     busy: false,
     progress: 0,
     progressText: '',
-    error: '',
     sizeText: '',
     result: null,
     adUnitId: (ad && ad.bannerUnitId) || '',
@@ -90,7 +89,7 @@ Page({
   },
 
   onInput(e) {
-    this.setData({ text: (e.detail && e.detail.value) || '', error: '' })
+    this.setData({ text: (e.detail && e.detail.value) || '' })
   },
 
   onPaste() {
@@ -100,7 +99,7 @@ Page({
           toast('剪贴板为空')
           return
         }
-        this.setData({ text: res.data, error: '' })
+        this.setData({ text: res.data })
       },
       fail: () => {
         toast('读取剪贴板失败')
@@ -112,7 +111,7 @@ Page({
     if (this.data.busy) return
     this.filePath = ''
     this.videoSize = 0
-    this.setData({ text: '', error: '', result: null, sizeText: '', progress: 0, localPath: '' })
+    this.setData({ text: '', result: null, sizeText: '', progress: 0, localPath: '' })
     this.setPhase('idle')
     try {
       wx.removeStorageSync('videosaver_draft')
@@ -135,7 +134,7 @@ Page({
       // ignore
     }
 
-    this.setData({ error: '', result: null, sizeText: '', progress: 0, localPath: '' })
+    this.setData({ result: null, sizeText: '', progress: 0, localPath: '' })
     this.filePath = ''
     this.videoSize = 0
     this.setPhase('parsing')
@@ -149,27 +148,10 @@ Page({
       .catch(err => this.onFail(err))
   },
 
-  /** 广告门槛：已授权直接执行；否则弹窗确认 → 观看广告 → 看完自动执行 */
-  withAdGate(action) {
-    if (isGranted()) {
-      action()
-      return
-    }
-    wx.showModal({
-      title: '解锁功能',
-      content: '观看一小段视频广告，即可解锁保存与复制链接，之后 24 小时内无需重复观看。',
-      confirmText: '观看广告',
-      cancelText: '暂不使用',
-      success: res => {
-        if (res.confirm) action()
-      },
-    })
-  },
-
   /** 保存视频 */
   onSave() {
     if (this.data.busy || !this.filePath && !this.data.result) return
-    this.withAdGate(() => this.saveNow())
+    withAdGate(() => this.saveNow())
   },
 
   /** 确认/授权通过后：真正下载视频 → 写入相册（看完广告自动执行） */
@@ -228,7 +210,7 @@ Page({
   onCopyLink() {
     const url = this.data.result && this.data.result.url
     if (!url) return
-    this.withAdGate(() => {
+    withAdGate(() => {
       ensureAdGrant().then(res => {
         if (!res.ok) {
           toast(res.reason || '需完整观看广告后才能复制')

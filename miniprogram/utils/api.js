@@ -36,6 +36,9 @@ const ERROR_HINTS = {
   identity_missing: '服务正在维护，请稍后再试',
   network_error: '网络异常，请稍后重试',
   bad_input: '没识别到有效链接',
+  rate_limited: '今日使用已达上限，请明天再试',
+  forbidden: '服务暂不可用，请稍后再试',
+  cold_start: '服务正在唤醒，请稍候重试',
 }
 
 function friendlyError(code, fallback) {
@@ -44,7 +47,13 @@ function friendlyError(code, fallback) {
 
 /** 调用云托管解析分享文案 */
 function parseViaCloud(text, url) {
-  return callContainer('/api/parse', 'POST', { text: String(text || ''), url }).then(body => {
+  return callContainer('/api/parse', 'POST', { text: String(text || ''), url })
+    .catch(err => {
+      // cloud 层带结构化 code（rate_limited / forbidden 等）时做友好映射
+      if (err && err.code) throw new Error(friendlyError(err.code))
+      throw err
+    })
+    .then(body => {
     const payload = body && body.data && typeof body.data === 'object' ? body.data : body
     if (body && body.code !== undefined && Number(body.code) !== 0) {
       throw new Error(friendlyError(body.code, body.message || body.msg))

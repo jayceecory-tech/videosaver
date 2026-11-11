@@ -1,5 +1,6 @@
 const { getHistory, updateHistory, removeHistory, clearHistory } = require('../../utils/storage')
 const { downloadVideo, getFileSize, saveToAlbum } = require('../../utils/media')
+const { withAdGate, ensureAdGrant } = require('../../utils/ad')
 const { formatSize, formatTime } = require('../../utils/format')
 
 Page({
@@ -37,24 +38,36 @@ Page({
     const item = this.data.list[Number(index)]
     if (!item) return
 
+    // 与首页一致：保存同样需要广告授权
+    withAdGate(() => this.doSave(item, id, Number(index)))
+  },
+
+  doSave(item, id, index) {
     this.setData({ savingId: id })
 
-    downloadVideo(
-      item.videoUrl,
-      progress => {
-        this.setData({ [`list[${index}].progress`]: progress })
-      },
-      task => {
-        this.task = task
-      },
-    )
-      .then(res => getFileSize(res.filePath).then(size => ({ filePath: res.filePath, size })))
-      .then(({ filePath, size }) => saveToAlbum(filePath).then(() => size))
-      .then(size => {
-        wx.showToast({ title: '已保存到相册', icon: 'success' })
-        if (size && size !== item.size) {
-          updateHistory(item.id, { size })
+    ensureAdGrant()
+      .then(res => {
+        if (!res.ok) {
+          wx.showToast({ title: res.reason || '需完整观看广告后才能保存', icon: 'none', duration: 3000 })
+          return null
         }
+        return downloadVideo(
+          item.videoUrl,
+          progress => {
+            this.setData({ [`list[${index}].progress`]: progress })
+          },
+          task => {
+            this.task = task
+          },
+        )
+          .then(res => getFileSize(res.filePath).then(size => ({ filePath: res.filePath, size })))
+          .then(({ filePath, size }) => saveToAlbum(filePath).then(() => size))
+          .then(size => {
+            wx.showToast({ title: '已保存到相册', icon: 'success' })
+            if (size && size !== item.size) {
+              updateHistory(item.id, { size })
+            }
+          })
       })
       .catch(err => {
         wx.showToast({ title: ((err && err.message) || '保存失败').slice(0, 20), icon: 'none', duration: 3000 })
@@ -95,7 +108,17 @@ Page({
 
   onCopy(e) {
     const { url } = e.currentTarget.dataset
-    if (url) wx.setClipboardData({ data: url })
+    if (!url) return
+    // 与首页一致：复制链接同样需要广告授权
+    withAdGate(() => {
+      ensureAdGrant().then(res => {
+        if (!res.ok) {
+          wx.showToast({ title: res.reason || '需完整观看广告后才能复制', icon: 'none', duration: 3000 })
+          return
+        }
+        wx.setClipboardData({ data: url })
+      })
+    })
   },
 
   abortTask() {

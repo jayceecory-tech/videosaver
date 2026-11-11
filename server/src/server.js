@@ -9,6 +9,7 @@ const { Readable } = require('stream')
 const crypto = require('crypto')
 
 const config = require('./config')
+const { guardParse } = require('./guard')
 const { parseVideo, cacheStats } = require('./douyin')
 const { extractFirstUrl, UA } = require('./url')
 const pool = require('./pool')
@@ -171,6 +172,8 @@ const server = http.createServer((req, res) => {
   }
 
   if (url.pathname === '/parse' && req.method === 'POST') {
+    const denied = guardParse(req)
+    if (denied) return sendJson(res, denied.status, denied.body)
     handleParse(req, res).catch(err => sendJson(res, 500, { code: 500, message: err.message }))
     return
   }
