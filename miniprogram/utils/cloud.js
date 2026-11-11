@@ -54,18 +54,12 @@ function callOnce(path, method, data, timeout) {
   })
 }
 
-/** 调用云托管服务，超时/网络失败自动重试 1 次，返回响应体（对象） */
+/**
+ * 调用云托管服务，返回响应体（对象）。
+ * 不在此层重试：重试由页面层统一做一次（失败时已有 warmup 拉着实例，语义更清晰、不叠加等待）
+ */
 function callContainer(path, method, data, timeout) {
-  return callOnce(path, method, data, timeout).catch(err => {
-    if (!err || err.retriable !== true) throw err
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        callOnce(path, method, data, timeout)
-          .then(resolve)
-          .catch(reject)
-      }, 2000)
-    })
-  })
+  return callOnce(path, method, data, timeout)
 }
 
 module.exports = {

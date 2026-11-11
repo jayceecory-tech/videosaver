@@ -54,8 +54,8 @@
       <button class="ghost-btn share-btn" open-type="share">分享给好友</button>
     </view>
 
-    <view class="ad-tip" wx:if="{{result && phase === 'ready' && !adFree}}">
-      今日首次保存需观看一小段广告，之后 24 小时内保存不再提示
+    <view class="ad-tip" wx:if="{{!adFree && !busy}}">
+      今日首次使用需观看一小段广告，之后 24 小时内提取、保存都不再提示
     </view>
 
     <ad wx:if="{{adUnitId}}" class="ad-slot" unit-id="{{adUnitId}}" ad-type="banner" ad-theme="white"></ad>
@@ -64,7 +64,7 @@
       <view class="tips-title">使用说明</view>
       <view class="tips-item">1. 在抖音 App 中点击「分享 → 复制链接」。</view>
       <view class="tips-item">2. 回到本页粘贴文案，点击「开始提取」。</view>
-      <view class="tips-item">3. 「保存视频」和「复制链接」每日首次使用需观看一小段广告，24 小时内不再提示。</view>
+      <view class="tips-item">3. 「开始提取」「保存视频」「复制链接」每日首次使用需观看一小段广告，24 小时内不再提示。</view>
       <view class="tips-item">4. 保存成功后在系统相册查看；「历史」页可回看保存记录。</view>
     </view>
   </view>

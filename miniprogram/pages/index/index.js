@@ -22,6 +22,13 @@ function toast(title) {
   wx.showToast({ title: String(title || '').slice(0, 20), icon: 'none', duration: 3000 })
 }
 
+/** 疑似服务未就绪（冷启动/网络/繁忙）的失败：值得静默重试一次 */
+const RETRY_HINTS = ['服务正在唤醒', '网络异常', '服务暂时不可用', '超时', '当前请求较多']
+function isRetriable(err) {
+  const msg = (err && err.message) || ''
+  return RETRY_HINTS.some(hint => msg.indexOf(hint) >= 0)
+}
+
 Page({
   data: {
     text: '',
@@ -134,12 +141,27 @@ Page({
       // ignore
     }
 
+    // 提取前先过广告门槛：未授权时弹窗 → 看广告（期间并行探活拉起实例，看完即可提取）
+    withAdGate(() => this.doExtract(text))
+  },
+
+  /** 真正执行提取：解析 → 展示预览图（不下载视频） */
+  doExtract(text) {
     this.setData({ result: null, sizeText: '', progress: 0, localPath: '' })
     this.filePath = ''
     this.videoSize = 0
     this.setPhase('parsing')
 
-    parseShareText(text)
+    const run = () => parseShareText(text)
+
+    run()
+      .catch(err => {
+        // 失败大概率是实例刚唤醒未就绪：短暂等待后静默重试一次，成功就继续后续流程
+        if (!isRetriable(err)) throw err
+        this.setPhase('parsing')
+        toast('提取中…')
+        return new Promise(resolve => setTimeout(resolve, 800)).then(run)
+      })
       .then(info => {
         // 提取 = 仅解析出信息并展示预览图，不下载视频（真正下载在保存时进行）
         this.setData({ result: info })

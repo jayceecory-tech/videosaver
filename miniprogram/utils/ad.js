@@ -6,13 +6,14 @@
  * - 看完后 24 小时内保存不再检查
  * - 广告拉取失败不阻断用户（放行），用户中途关闭则不放行
  */
-const { ad } = require('../config')
+const { ad, cloud } = require('../config')
 
 const STORAGE_KEY = 'videosaver_ad_until'
 const WINDOW_MS = 24 * 60 * 60 * 1000
 
 let rewardedAd = null
 let adError = ''
+let warmupAt = 0
 
 function supported() {
   return !!(wx.createRewardedVideoAd && ad && ad.rewardedUnitId)
@@ -120,8 +121,34 @@ function preload() {
 }
 
 /**
+ * 探活并顺带拉起云托管实例（有流量即扩容）。
+ * 在广告播放期间并行执行：30 秒广告刚好覆盖 10~20 秒冷启动，
+ * 用户看完广告时服务通常已就绪。
+ */
+function warmup() {
+  const now = Date.now()
+  if (now - warmupAt < 60 * 1000) return
+  warmupAt = now
+  if (!wx.cloud || typeof wx.cloud.callContainer !== 'function') return
+  try {
+    wx.cloud.callContainer({
+      config: { env: cloud.env },
+      path: '/api/health',
+      method: 'GET',
+      header: { 'X-WX-SERVICE': cloud.service },
+      timeout: 8000,
+      success() {},
+      fail() {},
+    })
+  } catch (e) {
+    // 探活失败不影响主流程
+  }
+}
+
+/**
  * 广告门槛（页面共享）：
- * 已授权 → 直接执行 action；否则弹窗确认，用户同意后观看广告，看完自动执行。
+ * 已授权 → 直接执行 action；否则弹窗确认，同意后先探活拉起实例，再播广告，
+ * 看完自动执行 action。
  * @param {() => void} action 授权通过后执行的动作
  */
 function withAdGate(action) {
@@ -131,11 +158,14 @@ function withAdGate(action) {
   }
   wx.showModal({
     title: '解锁功能',
-    content: '观看一小段视频广告，即可解锁保存与复制链接，之后 24 小时内无需重复观看。',
+    content: '观看一小段视频广告，即可解锁提取、保存与复制链接，之后 24 小时内无需重复观看。',
     confirmText: '观看广告',
     cancelText: '暂不使用',
     success: res => {
-      if (res.confirm) action()
+      if (!res.confirm) return
+      // 与广告并行：先把服务实例拉起来，广告看完时实例通常已就绪
+      warmup()
+      action()
     },
   })
 }
@@ -145,6 +175,7 @@ module.exports = {
   remainMs,
   ensureAdGrant,
   withAdGate,
+  warmup,
   preload,
   STORAGE_KEY,
 }
