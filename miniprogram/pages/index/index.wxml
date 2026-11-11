@@ -23,15 +23,7 @@
     </view>
 
     <view class="card result-card" wx:if="{{result}}">
-      <video
-        wx:if="{{localPath}}"
-        class="preview"
-        src="{{localPath}}"
-        controls
-        object-fit="contain"
-        poster="{{result.cover}}"
-      ></video>
-      <image class="cover" wx:elif="{{result.cover}}" src="{{result.cover}}" mode="aspectFill"></image>
+      <image class="cover" wx:if="{{result.cover}}" src="{{result.cover}}" mode="aspectFill"></image>
       <view class="result-main">
         <view class="result-title">{{result.title || '视频'}}</view>
         <view class="result-meta">
@@ -54,7 +46,7 @@
     <view class="row-actions" wx:if="{{result && (phase === 'ready' || phase === 'done')}}">
       <view class="ghost-btn" bindtap="onCopyLink">复制链接</view>
       <view class="save-btn {{busy ? 'is-disabled' : ''}}" bindtap="onSave">
-        {{phase === 'saving' ? '保存中…' : (phase === 'done' ? '再次保存' : '保存视频')}}
+        {{busy ? '保存中…' : (phase === 'done' ? '再次保存' : '保存视频')}}
       </view>
     </view>
 
@@ -74,7 +66,7 @@
       <view class="tips-title">使用说明</view>
       <view class="tips-item">1. 在抖音 App 中点击「分享 → 复制链接」。</view>
       <view class="tips-item">2. 回到本页粘贴文案，点击「开始提取」。</view>
-      <view class="tips-item">3. 提取完成后点击「保存视频」；每日首次保存需观看一小段广告，24 小时内保存不再提示。</view>
+      <view class="tips-item">3. 点击「保存视频」写入相册；每日首次保存需观看一小段广告，24 小时内不再提示。</view>
       <view class="tips-item">4. 保存成功后在系统相册查看；「历史」页可回看保存记录。</view>
     </view>
   </view>
