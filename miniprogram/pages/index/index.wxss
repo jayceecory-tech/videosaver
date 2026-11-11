@@ -211,16 +211,6 @@ page {
   overflow: hidden;
 }
 
-.error {
-  margin-top: 24rpx;
-  padding: 20rpx 24rpx;
-  border-radius: 16rpx;
-  background: #fff1f0;
-  color: #fa5151;
-  font-size: 26rpx;
-  line-height: 40rpx;
-}
-
 .tips {
   margin-top: 48rpx;
   padding: 24rpx;

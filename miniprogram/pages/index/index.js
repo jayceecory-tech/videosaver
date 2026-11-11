@@ -17,6 +17,11 @@ const PHASE_TEXT = {
 }
 const BUSY_PHASES = ['parsing', 'downloading', 'saving']
 
+/** 统一的轻提示：3 秒后自动消失，不打断用户 */
+function toast(title) {
+  wx.showToast({ title: String(title || '').slice(0, 20), icon: 'none', duration: 3000 })
+}
+
 Page({
   data: {
     text: '',
@@ -92,13 +97,13 @@ Page({
     wx.getClipboardData({
       success: res => {
         if (!res || !res.data) {
-          wx.showToast({ title: '剪贴板为空', icon: 'none' })
+          toast('剪贴板为空')
           return
         }
         this.setData({ text: res.data, error: '' })
       },
       fail: () => {
-        wx.showToast({ title: '读取剪贴板失败', icon: 'none' })
+        toast('读取剪贴板失败')
       },
     })
   },
@@ -120,7 +125,7 @@ Page({
     if (this.data.busy) return
     const text = (this.data.text || '').trim()
     if (!text) {
-      this.setData({ error: '请先粘贴分享文案或视频链接' })
+      toast('请先粘贴分享文案或链接')
       return
     }
 
@@ -176,7 +181,7 @@ Page({
       .then(res => {
         if (!res.ok) {
           this.setPhase(this.data.result ? 'ready' : 'idle')
-          wx.showToast({ title: res.reason || '需完整观看广告后才能保存', icon: 'none' })
+          toast(res.reason || '需完整观看广告后才能保存')
           return null
         }
         return downloadVideo(
@@ -226,7 +231,7 @@ Page({
     this.withAdGate(() => {
       ensureAdGrant().then(res => {
         if (!res.ok) {
-          wx.showToast({ title: res.reason || '需完整观看广告后才能复制', icon: 'none' })
+          toast(res.reason || '需完整观看广告后才能复制')
           return
         }
         this.setData({ adFree: isGranted() })
@@ -238,15 +243,19 @@ Page({
   onCancel() {
     this.abortTask()
     this.setPhase('idle', { progress: 0 })
-    wx.showToast({ title: '已取消', icon: 'none' })
+    toast('已取消')
   },
 
+  /**
+   * 统一失败处理：只弹 toast（3 秒），并回到可重试状态
+   * 用户取消保存/下载时按钮不能消失
+   */
   onFail(err) {
     this.task = null
     const msg = (err && err.message) || '处理失败'
-    this.setPhase('failed', { error: msg })
-    this.setData({ busy: false, progressText: '' })
-    wx.showToast({ title: msg.slice(0, 20), icon: 'none' })
+    // 有结果说明提取成功过，退回到 ready 让「保存视频」可再次点击
+    this.setPhase(this.data.result ? 'ready' : 'idle')
+    toast(msg)
   },
 
   setPhase(phase, extra) {

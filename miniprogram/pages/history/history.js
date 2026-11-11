@@ -57,7 +57,7 @@ Page({
         }
       })
       .catch(err => {
-        wx.showToast({ title: ((err && err.message) || '保存失败').slice(0, 20), icon: 'none' })
+        wx.showToast({ title: ((err && err.message) || '保存失败').slice(0, 20), icon: 'none', duration: 3000 })
       })
       .then(() => {
         this.abortTask()
@@ -88,7 +88,7 @@ Page({
         if (!res.confirm) return
         clearHistory()
         this.loadList()
-        wx.showToast({ title: '已清空', icon: 'none' })
+        wx.showToast({ title: '已清空', icon: 'none', duration: 3000 })
       },
     })
   },

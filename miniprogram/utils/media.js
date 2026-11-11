@@ -3,6 +3,13 @@ const { guessExt } = require('./parser')
 
 const ALBUM_SCOPE = 'scope.writePhotosAlbum'
 
+/** 带 code 的业务错误：让页面能区分「用户取消 / 权限 / 存储 / 网络」并给出对应提示 */
+function bizError(code, message) {
+  const err = new Error(message)
+  err.code = code
+  return err
+}
+
 /** 确保已获得保存到相册授权 */
 function ensureAlbumAuth() {
   return new Promise((resolve, reject) => {
@@ -20,18 +27,21 @@ function ensureAlbumAuth() {
             confirmText: '去开启',
             success(r) {
               if (!r.confirm) {
-                reject(new Error('未获得相册权限'))
+                reject(bizError('user_cancel', '已取消保存'))
                 return
               }
               wx.openSetting({
                 success(s) {
                   if (s.authSetting[ALBUM_SCOPE]) resolve()
-                  else reject(new Error('未获得相册权限'))
+                  else reject(bizError('auth_denied', '未开启相册权限，无法保存'))
                 },
                 fail() {
-                  reject(new Error('打开设置失败'))
+                  reject(bizError('auth_denied', '未开启相册权限，无法保存'))
                 },
               })
+            },
+            fail() {
+              reject(bizError('user_cancel', '已取消保存'))
             },
           })
           return
@@ -40,12 +50,12 @@ function ensureAlbumAuth() {
           scope: ALBUM_SCOPE,
           success: resolve,
           fail() {
-            reject(new Error('未获得相册权限'))
+            reject(bizError('auth_denied', '未开启相册权限，无法保存'))
           },
         })
       },
       fail() {
-        reject(new Error('获取授权状态失败'))
+        reject(bizError('auth_denied', '无法获取相册权限状态'))
       },
     })
   })
@@ -99,14 +109,14 @@ function downloadVideo(url, onProgress, onTask) {
       fail(err) {
         const msg = (err && err.errMsg) || ''
         if (msg.indexOf('abort') >= 0) {
-          reject(new Error('已取消下载'))
+          reject(bizError('user_cancel', '已取消下载'))
           return
         }
         if (msg.indexOf('exceed') >= 0 || msg.indexOf('max file size') >= 0 || msg.indexOf('no space') >= 0) {
-          reject(new Error('本地存储空间不足，请清理后重试'))
+          reject(bizError('storage', '本地存储空间不足，请清理后重试'))
           return
         }
-        reject(new Error(msg || '下载失败'))
+        reject(bizError('network', '网络异常，下载失败'))
       },
     })
 
@@ -142,19 +152,23 @@ function saveToAlbum(filePath) {
       success: resolve,
       fail(err) {
         const msg = (err && err.errMsg) || ''
+        if (msg.indexOf('cancel') >= 0) {
+          reject(bizError('user_cancel', '已取消保存'))
+          return
+        }
         if (msg.indexOf('auth deny') >= 0 || msg.indexOf('authorize') >= 0) {
-          reject(new Error('未获得相册权限'))
+          reject(bizError('auth_denied', '未开启相册权限，无法保存'))
           return
         }
         if (msg.indexOf('invalid video') >= 0 || msg.indexOf('format') >= 0) {
-          reject(new Error('视频格式不支持保存到相册'))
+          reject(bizError('format', '视频格式不支持保存，请重试'))
           return
         }
         if (msg.indexOf('privacy') >= 0 || msg.indexOf('112') >= 0) {
-          reject(new Error('未声明隐私权限：请在小程序后台「用户隐私保护指引」中勾选相册（仅写入）'))
+          reject(bizError('privacy', '相册权限未声明，暂时无法保存'))
           return
         }
-        reject(new Error(msg || '保存失败'))
+        reject(bizError('unknown', '保存失败，请重试'))
       },
     })
   }))

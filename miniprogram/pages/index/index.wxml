@@ -58,8 +58,6 @@
       今日首次保存需观看一小段广告，之后 24 小时内保存不再提示
     </view>
 
-    <view class="error" wx:if="{{error}}">{{error}}</view>
-
     <ad wx:if="{{adUnitId}}" class="ad-slot" unit-id="{{adUnitId}}" ad-type="banner" ad-theme="white"></ad>
 
     <view class="tips">
