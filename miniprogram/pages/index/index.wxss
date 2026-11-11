@@ -169,6 +169,13 @@ page {
   border: none;
 }
 
+/* 广告位：与卡片同宽、留白一致 */
+.ad-slot {
+  margin-top: 24rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
 .error {
   margin-top: 24rpx;
   padding: 20rpx 24rpx;

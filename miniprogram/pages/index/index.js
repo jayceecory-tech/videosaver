@@ -1,6 +1,7 @@
 const { parseShareText } = require('../../utils/api')
 const { extractFirstUrl } = require('../../utils/parser')
 const { downloadVideo, getFileSize, saveToAlbum } = require('../../utils/media')
+const { ad } = require('../../config')
 const { addHistory } = require('../../utils/storage')
 const { formatSize } = require('../../utils/format')
 
@@ -24,6 +25,7 @@ Page({
     error: '',
     sizeText: '',
     result: null,
+    adUnitId: (ad && ad.bannerUnitId) || '',
   },
 
   task: null,

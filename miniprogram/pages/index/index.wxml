@@ -51,6 +51,8 @@
 
     <view class="error" wx:if="{{error}}">{{error}}</view>
 
+    <ad wx:if="{{adUnitId}}" class="ad-slot" unit-id="{{adUnitId}}" ad-type="banner" ad-theme="white"></ad>
+
     <view class="tips">
       <view class="tips-title">使用说明</view>
       <view class="tips-item">1. 在抖音 App 中点击「分享 → 复制链接」。</view>
