@@ -23,10 +23,11 @@ module.exports = {
 
   /**
    * 广告位（流量主）
-   * 填入在小程序后台「流量主 → 广告位管理」创建的原生模板广告/Banner 广告位 ID，
-   * 留空则不展示广告。
+   * bannerUnitId：原生模板/Banner 广告位 ID，留空则不展示
+   * rewardedUnitId：激励视频广告位 ID，留空则保存不校验广告
    */
   ad: {
     bannerUnitId: '',
+    rewardedUnitId: 'adunit-7cf042a8abae6e30',
   },
 }

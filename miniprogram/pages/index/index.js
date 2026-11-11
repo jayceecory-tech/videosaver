@@ -2,13 +2,15 @@ const { parseShareText } = require('../../utils/api')
 const { extractFirstUrl } = require('../../utils/parser')
 const { downloadVideo, getFileSize, saveToAlbum } = require('../../utils/media')
 const { ad } = require('../../config')
+const { isGranted, ensureAdGrant, preload } = require('../../utils/ad')
 const { addHistory } = require('../../utils/storage')
 const { formatSize } = require('../../utils/format')
 
 const PHASE_TEXT = {
   idle: '',
   parsing: '正在解析链接…',
-  downloading: '正在下载视频…',
+  downloading: '正在提取视频…',
+  ready: '提取完成',
   saving: '正在保存到相册…',
   done: '已保存到相册',
   failed: '处理失败',
@@ -26,6 +28,8 @@ Page({
     sizeText: '',
     result: null,
     adUnitId: (ad && ad.bannerUnitId) || '',
+    /** 是否处于免广告窗口内（24 小时） */
+    adFree: false,
   },
 
   task: null,
@@ -46,6 +50,11 @@ Page({
       this.setData({ text: shared })
       if (!singlePage) this.onSubmit()
     }
+  },
+
+  onShow() {
+    this.setData({ adFree: isGranted() })
+    preload()
   },
 
   onShareAppMessage() {
@@ -94,6 +103,8 @@ Page({
 
   onClear() {
     if (this.data.busy) return
+    this.filePath = ''
+    this.videoSize = 0
     this.setData({ text: '', error: '', result: null, sizeText: '', progress: 0 })
     this.setPhase('idle')
     try {
@@ -118,23 +129,43 @@ Page({
     }
 
     this.setData({ error: '', result: null, sizeText: '', progress: 0 })
+    this.filePath = ''
     this.setPhase('parsing')
 
     parseShareText(text)
       .then(info => {
         this.setData({ result: info })
-        return this.downloadAndSave(info)
+        return this.extractVideo(info)
       })
       .catch(err => this.onFail(err))
   },
 
-  onSaveAgain() {
+  /** 保存视频：先过广告授权，再写入相册 */
+  onSave() {
     if (this.data.busy || !this.filePath) return
+    const info = this.data.result || {}
     this.setPhase('saving')
-    saveToAlbum(this.filePath)
-      .then(() => {
-        this.setPhase('done', { progress: 100 })
-        wx.showToast({ title: '已保存到相册', icon: 'success' })
+
+    ensureAdGrant()
+      .then(res => {
+        if (!res.ok) {
+          this.setPhase(this.data.result ? 'ready' : 'idle', { progress: 100 })
+          wx.showToast({ title: res.reason || '需完整观看广告后才能保存', icon: 'none' })
+          return null
+        }
+        return saveToAlbum(this.filePath).then(() => {
+          this.setPhase('done', { progress: 100 })
+          this.setData({ adFree: isGranted() })
+          addHistory({
+            sourceUrl: info.sourceUrl,
+            videoUrl: info.url,
+            title: info.title,
+            cover: info.cover,
+            author: info.author,
+            size: this.videoSize || 0,
+          })
+          wx.showToast({ title: '已保存到相册', icon: 'success' })
+        })
       })
       .catch(err => this.onFail(err))
   },
@@ -151,7 +182,8 @@ Page({
     wx.showToast({ title: '已取消', icon: 'none' })
   },
 
-  downloadAndSave(info) {
+  /** 提取：解析后把视频下载到临时文件，等待用户手动保存 */
+  extractVideo(info) {
     this.setPhase('downloading', { progress: 0 })
 
     return downloadVideo(
@@ -171,22 +203,10 @@ Page({
         return getFileSize(res.filePath)
       })
       .then(size => {
-        this.setData({ sizeText: formatSize(size) })
-        this.setPhase('saving')
-        return saveToAlbum(this.filePath).then(() => size)
-      })
-      .then(size => {
         this.task = null
-        this.setPhase('done', { progress: 100 })
-        addHistory({
-          sourceUrl: info.sourceUrl,
-          videoUrl: info.url,
-          title: info.title,
-          cover: info.cover,
-          author: info.author,
-          size,
-        })
-        wx.showToast({ title: '已保存到相册', icon: 'success' })
+        this.videoSize = size
+        this.setData({ sizeText: formatSize(size) })
+        this.setPhase('ready', { progress: 100 })
       })
   },
 

@@ -156,6 +156,41 @@ page {
   margin-right: 0;
 }
 
+/* 保存按钮：与 ghost-btn 同高，绿色实心 */
+.save-btn {
+  flex: 1.4;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 40rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.save-btn.is-disabled {
+  opacity: 0.6;
+}
+
+/* 分享按钮单独一行，视觉弱化 */
+.share-row {
+  margin-top: 20rpx;
+  display: flex;
+  flex-direction: row;
+}
+
+.share-row .share-btn {
+  flex: 1;
+}
+
+.ad-tip {
+  margin-top: 16rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #9aa1ab;
+}
+
 /* button 型分享按钮：去除默认边框与内边距，与 ghost-btn 视觉一致 */
 .share-btn {
   padding: 0;
