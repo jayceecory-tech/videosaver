@@ -30,6 +30,8 @@ Page({
     adUnitId: (ad && ad.bannerUnitId) || '',
     /** 是否处于免广告窗口内（24 小时） */
     adFree: false,
+    /** 提取完成后的本地视频路径（预览用） */
+    localPath: '',
   },
 
   task: null,
@@ -105,7 +107,7 @@ Page({
     if (this.data.busy) return
     this.filePath = ''
     this.videoSize = 0
-    this.setData({ text: '', error: '', result: null, sizeText: '', progress: 0 })
+    this.setData({ text: '', error: '', result: null, sizeText: '', progress: 0, localPath: '' })
     this.setPhase('idle')
     try {
       wx.removeStorageSync('videosaver_draft')
@@ -140,9 +142,26 @@ Page({
       .catch(err => this.onFail(err))
   },
 
-  /** 保存视频：先过广告授权，再写入相册 */
+  /** 保存视频：已授权直接保存；否则弹窗确认 → 观看广告 → 看完自动保存 */
   onSave() {
     if (this.data.busy || !this.filePath) return
+    if (isGranted()) {
+      this.saveNow()
+      return
+    }
+    wx.showModal({
+      title: '解锁保存到相册',
+      content: '观看一小段视频广告，即可保存本次视频，之后 24 小时内无需重复观看。',
+      confirmText: '观看广告',
+      cancelText: '暂不保存',
+      success: res => {
+        if (res.confirm) this.saveNow()
+      },
+    })
+  },
+
+  /** 走广告授权并写入相册（看完广告自动保存） */
+  saveNow() {
     const info = this.data.result || {}
     this.setPhase('saving')
 
@@ -205,7 +224,7 @@ Page({
       .then(size => {
         this.task = null
         this.videoSize = size
-        this.setData({ sizeText: formatSize(size) })
+        this.setData({ sizeText: formatSize(size), localPath: this.filePath })
         this.setPhase('ready', { progress: 100 })
       })
   },

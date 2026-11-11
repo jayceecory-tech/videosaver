@@ -23,7 +23,15 @@
     </view>
 
     <view class="card result-card" wx:if="{{result}}">
-      <image class="cover" wx:if="{{result.cover}}" src="{{result.cover}}" mode="aspectFill"></image>
+      <video
+        wx:if="{{localPath}}"
+        class="preview"
+        src="{{localPath}}"
+        controls
+        object-fit="contain"
+        poster="{{result.cover}}"
+      ></video>
+      <image class="cover" wx:elif="{{result.cover}}" src="{{result.cover}}" mode="aspectFill"></image>
       <view class="result-main">
         <view class="result-title">{{result.title || '视频'}}</view>
         <view class="result-meta">
