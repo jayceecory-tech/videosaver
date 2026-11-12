@@ -85,6 +85,14 @@ function ensureAdGrant() {
       } catch (e) {
         // ignore
       }
+      // 放行且非正常看完（fail-open）时告知用户，避免「没看广告就通过了」的困惑
+      if (ok && reason) {
+        try {
+          wx.showToast({ title: reason.slice(0, 20), icon: 'none', duration: 3000 })
+        } catch (e) {
+          // ignore
+        }
+      }
       resolve({ ok, reason })
     }
 
@@ -95,23 +103,43 @@ function ensureAdGrant() {
         grant()
         finish(true)
       } else {
-        finish(false, '需完整观看广告后才能保存')
+        finish(false, '需完整观看广告后才能继续')
       }
     }
 
-    const onError = () => finish(true, '') // 广告异常放行，不阻断用户
+    // 广告组件报错只记录，交给 show 重试链路处理；重试耗尽才放行
+    const onError = () => {
+      adError = '广告加载失败'
+    }
 
     instance.onClose(onClose)
     instance.onError(onError)
 
+    /**
+     * 关键修复：show 失败大多是「素材尚在加载」（毫秒级失败），
+     * 此前直接走 fail-open 导致没弹广告就放行。
+     * 现在按 1.2s 间隔重试 2 次（每次先确保 load），给素材加载留出时间。
+     */
+    const attemptShow = attempt => {
+      instance.show().catch(() => {
+        if (attempt >= 2) {
+          // 多次尝试仍拉不到广告：放行（合规兜底，不阻断用户），并提示
+          finish(true, '广告暂时无法加载，已直接放行')
+          return
+        }
+        setTimeout(() => {
+          instance
+            .load()
+            .catch(() => {})
+            .then(() => attemptShow(attempt + 1))
+        }, 1200)
+      })
+    }
+
     instance
-      .show()
-      .catch(() =>
-        instance
-          .load()
-          .then(() => instance.show())
-          .catch(() => finish(true, '')), // 拉不到广告也放行
-      )
+      .load()
+      .catch(() => {})
+      .then(() => attemptShow(0))
   })
 }
 
@@ -165,6 +193,8 @@ function withAdGate(action) {
       if (!res.confirm) return
       // 与广告并行：先把服务实例拉起来，广告看完时实例通常已就绪
       warmup()
+      // 确认后立即预加载素材，缩短 show 的等待
+      preload()
       action()
     },
   })
