@@ -145,27 +145,40 @@ Page({
     withAdGate(() => this.doExtract(text))
   },
 
-  /** 真正执行提取：解析 → 展示预览图（不下载视频） */
+  /**
+   * 真正执行提取：先过广告授权（看完自动提取）→ 解析 → 展示预览图（不下载视频）
+   * 与 saveNow/onCopyLink 保持相同结构：withAdGate 确认后，内部仍需 ensureAdGrant 播广告
+   */
   doExtract(text) {
     this.setData({ result: null, sizeText: '', progress: 0, localPath: '' })
     this.filePath = ''
     this.videoSize = 0
-    this.setPhase('parsing')
 
-    const run = () => parseShareText(text)
-
-    run()
-      .catch(err => {
-        // 失败大概率是实例刚唤醒未就绪：短暂等待后静默重试一次，成功就继续后续流程
-        if (!isRetriable(err)) throw err
+    ensureAdGrant()
+      .then(res => {
+        if (!res.ok) {
+          // 用户中途退出广告：不放行，回到可重试状态
+          this.setPhase(this.data.result ? 'ready' : 'idle')
+          toast(res.reason || '需完整观看广告后才能提取')
+          return null
+        }
         this.setPhase('parsing')
-        toast('提取中…')
-        return new Promise(resolve => setTimeout(resolve, 800)).then(run)
-      })
-      .then(info => {
-        // 提取 = 仅解析出信息并展示预览图，不下载视频（真正下载在保存时进行）
-        this.setData({ result: info })
-        this.setPhase('ready')
+
+        const run = () => parseShareText(text)
+
+        return run()
+          .catch(err => {
+            // 失败大概率是实例刚唤醒未就绪：短暂等待后静默重试一次，成功就继续后续流程
+            if (!isRetriable(err)) throw err
+            this.setPhase('parsing')
+            toast('提取中…')
+            return new Promise(resolve => setTimeout(resolve, 800)).then(run)
+          })
+          .then(info => {
+            // 提取 = 仅解析出信息并展示预览图，不下载视频（真正下载在保存时进行）
+            this.setData({ result: info })
+            this.setPhase('ready')
+          })
       })
       .catch(err => this.onFail(err))
   },
